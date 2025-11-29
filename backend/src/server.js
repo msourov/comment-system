@@ -1,43 +1,46 @@
-import express, { json, urlencoded } from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
-import morgan from 'morgan';
-import { createServer } from 'http';
-require('dotenv').config();
+import express from "express";
+import cors from "cors";
+import helmet from "helmet";
+import morgan from "morgan";
+import http from "http";
+import dotenv from "dotenv";
 
-import connectDB from './config/database';
-import routes from './routes';
-import errorHandler from './middlewares/errorHandler';
-import { apiLimiter } from './middlewares/rateLimiter';
-import { setupSocket } from './socket/socketHandler';
-import ApiError from './utils/ApiError';
+dotenv.config({ debug: true });
+
+import connectDB from "./config/db.js";
+import routes from "./routes/index.js";
+import errorHandler from "./middlewares/errorHandler.js";
+import { apiLimiter } from "./middlewares/rateLimiter.js";
+import { setupSocket } from "./socket/socketHandler.js";
+import ApiError from "./utils/ApiError.js";
 
 const app = express();
-const server = createServer(app);
+const server = http.createServer(app);
 
 connectDB();
 
 app.use(helmet());
-app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    credentials: true,
+  })
+);
 
-app.use(json({ limit: '10mb' }));
-app.use(urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
-if (process.env.NODE_ENV === 'development') {
-  app.use(morgan('dev'));
+if (process.env.NODE_ENV === "development") {
+  app.use(morgan("dev"));
 }
 
-app.use('/api', apiLimiter);
+app.use("/api", apiLimiter);
 
 const io = setupSocket(server);
 app.io = io;
+app.use("/api", routes);
 
-app.use('/api', routes);
-
-app.use('*', (req, res, next) => {
+app.use((req, res, next) => {
   next(new ApiError(404, `Route ${req.originalUrl} not found`));
 });
 
@@ -48,7 +51,12 @@ server.listen(PORT, () => {
   console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
 });
 
-process.on('unhandledRejection', (err) => {
-  console.error('Unhandled Rejection:', err.message);
+process.on("unhandledRejection", (err) => {
+  console.error("Unhandled Rejection:", err.message);
   server.close(() => process.exit(1));
+});
+
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught Exception:", err.message);
+  process.exit(1);
 });

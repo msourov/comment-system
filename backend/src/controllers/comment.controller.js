@@ -4,12 +4,12 @@ import {
   createComment as _createComment,
   updateComment as _updateComment,
   deleteComment as _deleteComment,
-} from "../services/comment.service";
-import { toggleLike, toggleDislike } from "../services/interaction.service";
-import ApiResponse from "../utils/ApiResponse";
-import asyncHandler from "../utils/asyncHandler";
+} from "../services/comment.service.js";
+import { toggleLike, toggleDislike } from "../services/interaction.service.js";
+import ApiResponse from "../utils/ApiResponse.js";
+import asyncHandler from "../utils/asyncHandler.js";
 
-const getComments = asyncHandler(async (req, res) => {
+export const getComments = asyncHandler(async (req, res) => {
   const { pageId, sortBy, page, limit, cursor, parentCommentId } = req.query;
 
   const result = await _getComments({
@@ -26,7 +26,7 @@ const getComments = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, result, "Comments retrieved successfully"));
 });
 
-const getCommentById = asyncHandler(async (req, res) => {
+export const getCommentById = asyncHandler(async (req, res) => {
   const comment = await _getCommentById(req.params.id);
 
   res
@@ -34,7 +34,7 @@ const getCommentById = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, comment, "Comment retrieved successfully"));
 });
 
-const createComment = asyncHandler(async (req, res) => {
+export const createComment = asyncHandler(async (req, res) => {
   const comment = await _createComment(req.user._id, req.body);
   if (req.app.io) {
     req.app.io.to(`page:${req.body.pageId}`).emit("newComment", comment);
@@ -45,7 +45,7 @@ const createComment = asyncHandler(async (req, res) => {
     .json(new ApiResponse(201, comment, "Comment created successfully"));
 });
 
-const updateComment = asyncHandler(async (req, res) => {
+export const updateComment = asyncHandler(async (req, res) => {
   const comment = await _updateComment(
     req.params.id,
     req.user._id,
@@ -61,7 +61,7 @@ const updateComment = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, comment, "Comment updated successfully"));
 });
 
-const deleteComment = asyncHandler(async (req, res) => {
+export const deleteComment = asyncHandler(async (req, res) => {
   const result = await _deleteComment(
     req.params.id,
     req.user._id,
@@ -79,7 +79,7 @@ const deleteComment = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, result, "Comment deleted successfully"));
 });
 
-const likeComment = asyncHandler(async (req, res) => {
+export const likeComment = asyncHandler(async (req, res) => {
   const comment = await commentService.getCommentById(req.params.id);
 
   const result = await interactionService.toggleLike(
@@ -99,7 +99,7 @@ const likeComment = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, result, `Comment ${result.action}`));
 });
 
-const dislikeComment = asyncHandler(async (req, res) => {
+export const dislikeComment = asyncHandler(async (req, res) => {
   const comment = await commentService.getCommentById(req.params.id);
 
   const result = await interactionService.toggleDislike(
@@ -118,13 +118,3 @@ const dislikeComment = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, result, `Comment ${result.action}`));
 });
-
-export default {
-  getComments,
-  getCommentById,
-  createComment,
-  updateComment,
-  deleteComment,
-  likeComment,
-  dislikeComment,
-};

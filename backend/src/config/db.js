@@ -1,4 +1,6 @@
-import { connect, connection } from 'mongoose';
+import mongoose from "mongoose";
+
+const { connect, connection } = mongoose;
 
 const connectDB = async () => {
   try {
@@ -8,16 +10,15 @@ const connectDB = async () => {
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000,
       retryWrites: true,
-      w: 'majority'
+      w: "majority",
     });
-    
+
     console.log(`MongoDB Connected: ${conn.connection.host}`);
 
-    process.on('SIGINT', async () => {
+    process.on("SIGINT", async () => {
       await connection.close();
       process.exit(0);
     });
-    
   } catch (error) {
     console.error(`MongoDB Connection Error: ${error.message}`);
     process.exit(1);

@@ -1,6 +1,8 @@
-import { sign } from "jsonwebtoken";
-import { findOne, create, findById } from "../models/User.model";
-import ApiError from "../utils/ApiError";
+import pkg from "jsonwebtoken";
+import User from "../models/User.model.js";
+import ApiError from "../utils/ApiError.js";
+
+const { sign } = pkg;
 
 class AuthService {
   generateToken(userId) {
@@ -17,7 +19,7 @@ class AuthService {
 
   async register(userData) {
     const { username, email, password } = userData;
-    const existingUser = await findOne({
+    const existingUser = await User.findOne({
       $or: [{ email }, { username }],
     });
 
@@ -27,7 +29,7 @@ class AuthService {
       }
       throw new ApiError(400, "Username already taken");
     }
-    const user = await create({
+    const user = await User.create({
       username,
       email,
       password,
@@ -35,6 +37,8 @@ class AuthService {
 
     const accessToken = this.generateToken(user._id);
     const refreshToken = this.generateRefreshToken(user._id);
+    await user.setRefreshToken(refreshToken);
+    await user.save();
 
     return {
       user: {
@@ -49,7 +53,7 @@ class AuthService {
   }
 
   async login(email, password) {
-    const user = await findOne({ email }).select("+password");
+    const user = await User.findOne({ email }).select("+password");
 
     if (!user || !user.isActive) {
       throw new ApiError(401, "Invalid email or password");
@@ -61,6 +65,8 @@ class AuthService {
     }
     const accessToken = this.generateToken(user._id);
     const refreshToken = this.generateRefreshToken(user._id);
+    await user.setRefreshToken(refreshToken);
+    await user.save();
 
     return {
       user: {
@@ -75,7 +81,7 @@ class AuthService {
   }
 
   async getProfile(userId) {
-    const user = await findById(userId);
+    const user = await User.findById(userId);
     if (!user) {
       throw new ApiError(404, "User not found");
     }

@@ -1,36 +1,34 @@
-import { body } from 'express-validator';
+import { body } from "express-validator";
 
-const registerValidator = [
-  body('username')
+export const registerValidator = [
+  body("username")
     .trim()
     .isLength({ min: 3, max: 30 })
-    .withMessage('Username must be between 3 and 30 characters')
+    .withMessage("Username must be between 3 and 30 characters")
     .matches(/^[a-zA-Z0-9_]+$/)
-    .withMessage('Username can only contain letters, numbers, and underscores'),
-  
-  body('email')
+    .withMessage("Username can only contain letters, numbers, and underscores"),
+
+  body("email")
     .trim()
     .isEmail()
-    .withMessage('Please provide a valid email')
+    .withMessage("Please provide a valid email")
     .normalizeEmail(),
-  
-  body('password')
+
+  body("password")
     .isLength({ min: 8 })
-    .withMessage('Password must be at least 8 characters')
+    .withMessage("Password must be at least 8 characters")
     .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
-    .withMessage('Password must contain at least one uppercase letter, one lowercase letter, and one number')
+    .withMessage(
+      "Password must contain at least one uppercase letter, one lowercase letter, and one number"
+    ),
 ];
 
-const loginValidator = [
-  body('email')
+export const loginValidator = [
+  body("email")
     .trim()
     .isEmail()
-    .withMessage('Please provide a valid email')
+    .withMessage("Please provide a valid email")
     .normalizeEmail(),
-  
-  body('password')
-    .notEmpty()
-    .withMessage('Password is required')
-];
 
-export default { registerValidator, loginValidator };
+  body("password").notEmpty().withMessage("Password is required"),
+];
