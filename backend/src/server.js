@@ -34,6 +34,8 @@ if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
 
+app.get("/", (req, res) => res.send("API running"));
+
 app.use("/api", apiLimiter);
 
 const io = setupSocket(server);

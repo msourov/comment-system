@@ -4,7 +4,6 @@ import commentRoutes from "./comment.routes.js";
 
 const router = Router();
 
-router.get("/", (req, res) => res.send("API running"));
 router.use("/auth", authRoutes);
 router.use("/comments", commentRoutes);
 
