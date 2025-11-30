@@ -11,7 +11,7 @@ export const createCommentValidator = [
   body("pageId").trim().notEmpty().withMessage("Page ID is required"),
 
   body("parentCommentId")
-    .optional()
+    .optional({ nullable: true, checkFalsy: true })
     .isMongoId()
     .withMessage("Invalid parent comment ID"),
 ];

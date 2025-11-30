@@ -13,10 +13,11 @@ export const getComments = async (filters) => {
 
   const skip = (page - 1) * limit;
 
+  // Only get top-level comments (no parentComment)
   const query = {
     pageId,
     isDeleted: false,
-    parentComment: parentCommentId || null,
+    parentComment: null,
   };
 
   if (cursor && sortBy === "newest") {
@@ -42,8 +43,26 @@ export const getComments = async (filters) => {
     Comment.countDocuments(query),
   ]);
 
+  // Fetch replies for each top-level comment
+  const commentsWithReplies = await Promise.all(
+    comments.map(async (comment) => {
+      const replies = await Comment.find({
+        parentComment: comment._id,
+        isDeleted: false,
+      })
+        .sort({ createdAt: 1 }) // Replies sorted oldest first
+        .populate("author", "username email")
+        .lean();
+
+      return {
+        ...comment,
+        replies: replies || [],
+      };
+    })
+  );
+
   return {
-    comments,
+    comments: commentsWithReplies,
     pagination: {
       total,
       page,
@@ -54,6 +73,33 @@ export const getComments = async (filters) => {
         comments.length > 0 ? comments[comments.length - 1].createdAt : null,
     },
   };
+};
+
+export const getCommentById = async (commentId) => {
+  const comment = await Comment.findOne({
+    _id: commentId,
+    isDeleted: false,
+  })
+    .populate("author", "username email")
+    .lean();
+
+  if (!comment) {
+    throw new ApiError(404, "Comment not found");
+  }
+
+  if (!comment.parentComment) {
+    const replies = await Comment.find({
+      parentComment: commentId,
+      isDeleted: false,
+    })
+      .sort({ createdAt: 1 })
+      .populate("author", "username email")
+      .lean();
+
+    comment.replies = replies;
+  }
+
+  return comment;
 };
 
 export const createComment = async (userId, commentData) => {
@@ -143,31 +189,4 @@ export const deleteComment = async (commentId, userId, userRole) => {
   }
 
   return { message: "Comment deleted successfully" };
-};
-
-export const getCommentById = async (commentId) => {
-  const comment = await Comment.findOne({
-    _id: commentId,
-    isDeleted: false,
-  })
-    .populate("author", "username email")
-    .lean();
-
-  if (!comment) {
-    throw new ApiError(404, "Comment not found");
-  }
-
-  if (!comment.parentComment) {
-    const replies = await Comment.find({
-      parentComment: commentId,
-      isDeleted: false,
-    })
-      .sort({ createdAt: 1 })
-      .populate("author", "username email")
-      .lean();
-
-    comment.replies = replies;
-  }
-
-  return comment;
 };

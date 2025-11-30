@@ -5,9 +5,10 @@ import {
   updateComment as _updateComment,
   deleteComment as _deleteComment,
 } from "../services/comment.service.js";
-import { toggleLike, toggleDislike } from "../services/interaction.service.js";
+import { emitToPage } from "../socket/socketHandler.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
+import * as interactionService from "../services/interaction.service.js";
 
 export const getComments = asyncHandler(async (req, res) => {
   const { pageId, sortBy, page, limit, cursor, parentCommentId } = req.query;
@@ -37,7 +38,10 @@ export const getCommentById = asyncHandler(async (req, res) => {
 export const createComment = asyncHandler(async (req, res) => {
   const comment = await _createComment(req.user._id, req.body);
   if (req.app.io) {
-    req.app.io.to(`page:${req.body.pageId}`).emit("newComment", comment);
+    emitToPage(req.app.io, req.body.pageId, "newComment", {
+      comment,
+      timestamp: new Date(),
+    });
   }
 
   res
@@ -52,8 +56,15 @@ export const updateComment = asyncHandler(async (req, res) => {
     req.body.content
   );
 
+  // Emit update to all users
   if (req.app.io) {
-    req.app.io.to(`page:${comment.pageId}`).emit("updateComment", comment);
+    emitToPage(req.app.io, comment.pageId, "commentUpdated", {
+      commentId: comment._id,
+      content: comment.content,
+      isEdited: comment.isEdited,
+      editedAt: comment.editedAt,
+      timestamp: new Date(),
+    });
   }
 
   res
@@ -62,15 +73,19 @@ export const updateComment = asyncHandler(async (req, res) => {
 });
 
 export const deleteComment = asyncHandler(async (req, res) => {
+  const comment = await _getCommentById(req.params.id);
+
   const result = await _deleteComment(
     req.params.id,
     req.user._id,
     req.user.role
   );
 
+  // Emit deletion to all users
   if (req.app.io) {
-    req.app.io.to(`page:${req.params.pageId}`).emit("deleteComment", {
+    emitToPage(req.app.io, comment.pageId, "commentDeleted", {
       commentId: req.params.id,
+      timestamp: new Date(),
     });
   }
 
@@ -80,17 +95,22 @@ export const deleteComment = asyncHandler(async (req, res) => {
 });
 
 export const likeComment = asyncHandler(async (req, res) => {
-  const comment = await commentService.getCommentById(req.params.id);
+  const comment = await _getCommentById(req.params.id);
 
   const result = await interactionService.toggleLike(
     req.params.id,
     req.user._id
   );
 
+  // Emit like update to all users
   if (req.app.io) {
-    req.app.io.to(`page:${comment.pageId}`).emit("likeComment", {
+    emitToPage(req.app.io, comment.pageId, "commentLiked", {
       commentId: req.params.id,
-      ...result,
+      action: result.action,
+      likeCount: result.likeCount,
+      dislikeCount: result.dislikeCount,
+      userId: req.user._id,
+      timestamp: new Date(),
     });
   }
 
@@ -100,17 +120,22 @@ export const likeComment = asyncHandler(async (req, res) => {
 });
 
 export const dislikeComment = asyncHandler(async (req, res) => {
-  const comment = await commentService.getCommentById(req.params.id);
+  const comment = await _getCommentById(req.params.id);
 
   const result = await interactionService.toggleDislike(
     req.params.id,
     req.user._id
   );
 
+  // Emit dislike update to all users
   if (req.app.io) {
-    req.app.io.to(`page:${req.params.pageId}`).emit("dislikeComment", {
+    emitToPage(req.app.io, comment.pageId, "commentDisliked", {
       commentId: req.params.id,
-      ...result,
+      action: result.action,
+      likeCount: result.likeCount,
+      dislikeCount: result.dislikeCount,
+      userId: req.user._id,
+      timestamp: new Date(),
     });
   }
 
