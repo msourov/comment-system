@@ -14,7 +14,7 @@ export default function HomePage() {
     <div className={styles.homePage}>
       <div className={styles.header}>
         <div className={styles.badge}>✨ Modern Comment System</div>
-        <h1 className={styles.title}>Welcome to CommentHub</h1>
+        <h1 className={styles.title}>Welcome to ThreadSphere</h1>
         <p className={styles.description}>
           A modern comment system with rich interactions, nested replies, and
           real-time updates. Join 10,000+ users sharing their thoughts with the
