@@ -6,7 +6,7 @@ export const getComments = async (filters) => {
     pageId,
     sortBy = "newest",
     page = 1,
-    limit = 20,
+    limit = 10,
     cursor = null,
     parentCommentId = null,
   } = filters;

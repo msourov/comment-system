@@ -20,9 +20,9 @@ export const SocketProvider = ({ children }) => {
   useEffect(() => {
     if (!isAuthenticated || !token) {
       // Clean up socket when not authenticated
-      console.log("⚠️ Cannot connect socket: Not authenticated or no token");
+      console.log("Cannot connect socket: Not authenticated or no token");
       if (socket.connected) {
-        console.log("🔌 Closing socket connection (not authenticated)");
+        console.log("Closing socket connection (not authenticated)");
         socket.disconnect();
         socketSetupRef.current = false;
       }
@@ -36,7 +36,7 @@ export const SocketProvider = ({ children }) => {
       return;
     }
 
-    console.log("🔌 Initializing socket connection...");
+    console.log("Initializing socket connection...");
     console.log("Auth check:", {
       isAuthenticated,
       hasToken: !!token,
@@ -45,7 +45,6 @@ export const SocketProvider = ({ children }) => {
 
     socketSetupRef.current = true;
 
-    // Set auth token
     socket.auth = { token };
     socket.io.opts.auth = { token };
 
@@ -54,7 +53,7 @@ export const SocketProvider = ({ children }) => {
       setConnected(true);
       setError(null);
 
-      // FIX: Auto-join current page after connecting
+      // Auto-join current page after connecting
       const currentPage = window.location.pathname;
       socket.emit("joinPage", currentPage);
       console.log("Auto-joined page on connect:", currentPage);
@@ -83,26 +82,26 @@ export const SocketProvider = ({ children }) => {
     };
 
     const handleReconnect = (attemptNumber) => {
-      console.log(`🔄 Socket reconnected after ${attemptNumber} attempts`);
+      console.log(`Socket reconnected after ${attemptNumber} attempts`);
       setConnected(true);
       setError(null);
     };
 
     // Real-time comment event handlers
     const handleNewComment = (data) => {
-      console.log("📥 New comment received:", data);
+      console.log("New comment received:", data);
       if (data && data.comment) {
         dispatch(addCommentRealtime(data.comment));
       }
     };
 
     const handleCommentUpdated = (data) => {
-      console.log("📝 Comment updated:", data);
+      console.log("Comment updated:", data);
       dispatch(updateCommentRealtime(data));
     };
 
     const handleCommentDeleted = (data) => {
-      console.log("🗑️ Comment deleted:", data);
+      console.log("Comment deleted:", data);
       const commentId = data.commentId || data;
       if (commentId) {
         dispatch(deleteCommentRealtime(commentId));
@@ -176,7 +175,7 @@ export const SocketProvider = ({ children }) => {
         console.log(`Emitting joinPage:`, pageId);
         socket.emit("joinPage", pageId);
       } else {
-        console.warn("⚠️ Cannot join page: Socket not connected");
+        console.warn("Cannot join page: Socket not connected");
       }
     },
     [socket]

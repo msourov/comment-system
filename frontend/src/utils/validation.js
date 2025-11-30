@@ -14,7 +14,6 @@ export const validateComment = (content) => {
 
 export const canUserVote = (comment, userId) => {
     console.log(userId, 'userId')
-  // Check if user has already voted
   if (!comment.userVote) {
     return true;
   }

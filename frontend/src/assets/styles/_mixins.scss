@@ -1,0 +1,24 @@
+@mixin respond-to($breakpoint) {
+  @if $breakpoint == 'mobile' {
+    @media (max-width: 480px) { @content; }
+  }
+  @if $breakpoint == 'tablet' {
+    @media (min-width: 481px) and (max-width: 768px) { @content; }
+  }
+  @if $breakpoint == 'desktop' {
+    @media (min-width: 769px) { @content; }
+  }
+}
+
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin gradient-text($gradient) {
+  background: $gradient;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}

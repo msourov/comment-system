@@ -20,9 +20,8 @@ export const registerUser = createAsyncThunk(
       });
       return response.data;
     } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message || "Registration failed"
-      );
+      console.log(error, "error");
+      return rejectWithValue(error?.message || "Registration failed");
     }
   }
 );
@@ -34,7 +33,7 @@ export const loginUser = createAsyncThunk(
       const response = await api.post("/auth/login", { email, password });
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || "Login failed");
+      return rejectWithValue(error?.message || "Login failed");
     }
   }
 );
@@ -48,6 +47,7 @@ const authSlice = createSlice({
       state.token = null;
       state.isAuthenticated = false;
       localStorage.removeItem("token");
+      localStorage.removeItem("user");
     },
     clearError: (state) => {
       state.error = null;
@@ -65,7 +65,7 @@ const authSlice = createSlice({
         state.token = action.payload.accessToken;
         state.isAuthenticated = true;
         localStorage.setItem("token", action.payload.accessToken);
-        localStorage.setItem("user", JSON.stringify(action.payload.data.user));
+        localStorage.setItem("user", JSON.stringify(action.payload.user));
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.loading = false;

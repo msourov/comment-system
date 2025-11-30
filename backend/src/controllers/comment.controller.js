@@ -17,14 +17,17 @@ export const getComments = asyncHandler(async (req, res) => {
     pageId,
     sortBy,
     page: parseInt(page) || 1,
-    limit: parseInt(limit) || 20,
+    limit: parseInt(limit) || 10,
     cursor,
     parentCommentId,
   });
 
-  res
-    .status(200)
-    .json(new ApiResponse(200, result, "Comments retrieved successfully"));
+  res.status(200).json(
+    new ApiResponse(200, {
+      comments: result.comments,
+      pagination: result.pagination,
+    }, "Comments retrieved successfully")
+  );
 });
 
 export const getCommentById = asyncHandler(async (req, res) => {

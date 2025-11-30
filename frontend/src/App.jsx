@@ -11,7 +11,7 @@ import SocketDebug from "./common/SocketDebug";
 function App() {
   return (
     <div className="App">
-      <SocketDebug />
+      {/* <SocketDebug /> */}
       <Navbar />
       <Routes>
         <Route path="/login" element={<LoginPage />} />
