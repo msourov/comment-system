@@ -18,7 +18,7 @@ export const setupSocket = (server) => {
   io.use((socket, next) => {
     const token = socket.handshake.auth.token;
 
-    console.log("🔐 Socket auth attempt:");
+    console.log("Socket auth attempt:");
     console.log("  - Token present:", !!token);
     console.log(
       "  - Token preview:",
@@ -43,27 +43,9 @@ export const setupSocket = (server) => {
 
   io.on("connection", (socket) => {
     console.log(`User connected: ${socket.userId} (Socket ID: ${socket.id})`);
-
-    // Join page-specific room
-    // socket.on("joinPage", (pageId) => {
-    //   socket.join(`page:${pageId}`);
-    //   socket.currentPage = pageId;
-    //   console.log(`User ${socket.userId} joined page: ${pageId}`);
-
-    //   // Notify others in the room
-    //   socket.to(`page:${pageId}`).emit("userJoined", {
-    //     userId: socket.userId,
-    //     timestamp: new Date(),
-    //   });
-    // });
     socket.on("joinPage", (pageId) => {
       socket.join(`page:${pageId}`);
       socket.currentPage = pageId;
-
-      // ✅ ADD MORE DEBUG LOGS
-      console.log(`✅✅✅ User ${socket.userId} JOINED page: ${pageId}`);
-      console.log(`   Room name: page:${pageId}`);
-      console.log(`   Total rooms for this socket:`, Array.from(socket.rooms));
 
       // Notify others in the room
       socket.to(`page:${pageId}`).emit("userJoined", {

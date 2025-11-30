@@ -96,7 +96,7 @@ const CommentItem = ({ comment, depth = 0 }) => {
     setDeleting(true);
     try {
       await dispatch(deleteComment(comment._id)).unwrap();
-      console.log("✅ Comment deleted successfully");
+      console.log("Comment deleted successfully");
     } catch (error) {
       console.error("Failed to delete comment:", error);
       alert(error.message || "Failed to delete comment. Please try again.");
@@ -152,14 +152,6 @@ const CommentItem = ({ comment, depth = 0 }) => {
     setReplyOpen(false);
     setReplyText("");
   };
-
-  if (deleting) {
-    return (
-      <div className={styles.commentItem} style={{ opacity: 0.5 }}>
-        <div className={styles.deletingMessage}>Deleting comment...</div>
-      </div>
-    );
-  }
 
   return (
     <div

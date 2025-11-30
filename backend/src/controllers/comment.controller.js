@@ -83,6 +83,7 @@ export const deleteComment = asyncHandler(async (req, res) => {
 
   // Emit deletion to all users
   if (req.app.io) {
+    console.log('📡 Emitting commentDeleted for:', req.params.id);
     emitToPage(req.app.io, comment.pageId, "commentDeleted", {
       commentId: req.params.id,
       timestamp: new Date(),

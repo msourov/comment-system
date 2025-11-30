@@ -19,9 +19,9 @@ const CommentList = () => {
     console.log("   Socket connected:", connected);
     console.log("   Socket ID:", socket?.id);
 
-    // ✅ FIX: Only join if socket is actually connected
+    // FIX: Only join if socket is actually connected
     if (connected && socket?.connected && !hasJoinedRef.current) {
-      console.log("📄 Joining page:", pageId);
+      console.log("Joining page:", pageId);
       joinPage(pageId);
       hasJoinedRef.current = true;
     }

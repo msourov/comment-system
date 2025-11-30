@@ -103,7 +103,12 @@ export const SocketProvider = ({ children }) => {
 
     const handleCommentDeleted = (data) => {
       console.log("🗑️ Comment deleted:", data);
-      dispatch(deleteCommentRealtime(data));
+      const commentId = data.commentId || data;
+      if (commentId) {
+        dispatch(deleteCommentRealtime(commentId));
+      } else {
+        console.error("Invalid commentId in delete event:", data);
+      }
     };
 
     const handleCommentLike = (data) => {

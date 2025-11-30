@@ -330,8 +330,27 @@ const commentsSlice = createSlice({
       .addCase(deleteComment.fulfilled, (state, action) => {
         const commentId = action.payload;
         state.actionLoading[`delete_${commentId}`] = false;
-        state.comments = state.comments.filter((c) => c._id !== commentId);
-        state.totalComments -= 1;
+        setTimeout(() => {
+          const stillExists = state.comments.some((c) => c._id === commentId);
+          if (stillExists) {
+            console.log("⚠️ Socket didn't update, removing manually");
+            const removeFromComments = (comments) => {
+              return comments
+                .map((comment) => {
+                  if (comment._id === commentId) return null;
+                  if (comment.replies?.length > 0) {
+                    return {
+                      ...comment,
+                      replies: removeFromComments(comment.replies),
+                    };
+                  }
+                  return comment;
+                })
+                .filter((c) => c !== null);
+            };
+            state.comments = removeFromComments(state.comments);
+          }
+        }, 500);
       })
       .addCase(deleteComment.rejected, (state, action) => {
         const commentId = action.meta.arg;
