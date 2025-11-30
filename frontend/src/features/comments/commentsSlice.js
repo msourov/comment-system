@@ -136,7 +136,6 @@ const commentsSlice = createSlice({
 
       console.log("Adding comment to state:", newComment);
 
-      // If it's a reply
       if (newComment.parentComment) {
         const addReplyToParent = (comments) => {
           return comments.map((comment) => {
@@ -170,7 +169,7 @@ const commentsSlice = createSlice({
         };
         state.comments = addReplyToParent(state.comments);
       } else {
-        // Top-level comment - check for duplicates
+        // check for duplicates in top level comment
         const commentExists = state.comments.some(
           (c) => c && c._id === newComment._id
         );
@@ -179,7 +178,7 @@ const commentsSlice = createSlice({
           console.log("Adding new top-level comment");
           state.comments.unshift({
             ...newComment,
-            replies: newComment.replies || [], // Preserve existing replies or init empty
+            replies: newComment.replies || [],
           });
           state.totalComments += 1;
         } else {
@@ -219,7 +218,6 @@ const commentsSlice = createSlice({
             if (comment._id === commentId) {
               return null; // Mark for removal
             }
-            // Check replies
             if (comment.replies?.length > 0) {
               const updatedReplies = removeFromComments(comment.replies);
               return {
@@ -281,13 +279,15 @@ const commentsSlice = createSlice({
       })
       .addCase(fetchComments.fulfilled, (state, action) => {
         state.loading = false;
-        state.comments = action.payload.comments.map((comment) => ({
+        const { comments, pagination } = action.payload.data || action.payload;
+        state.comments = comments.map((comment) => ({
           ...comment,
           replies: comment.replies || [],
         }));
         state.totalComments = action.payload.pagination.total;
         state.currentPage = action.payload.pagination.page;
         state.totalPages = action.payload.pagination.totalPages;
+        state.limit = pagination.limit;
       })
       .addCase(fetchComments.rejected, (state, action) => {
         state.loading = false;
@@ -313,10 +313,41 @@ const commentsSlice = createSlice({
       .addCase(updateComment.fulfilled, (state, action) => {
         const commentId = action.meta.arg.commentId;
         state.actionLoading[`update_${commentId}`] = false;
-        const index = state.comments.findIndex((c) => c._id === commentId);
-        if (index !== -1) {
-          state.comments[index] = action.payload.comment;
-        }
+
+        // Extract updated comment from response
+        const updatedComment =
+          action.payload.data || action.payload.comment || action.payload;
+
+        console.log("Comment updated via API:", commentId);
+
+        const updateInComments = (comments) => {
+          return comments.map((comment) => {
+            if (comment._id === commentId) {
+              console.log("   Found top-level comment, preserving replies");
+              return {
+                ...comment,
+                content: updatedComment.content,
+                isEdited:
+                  updatedComment.isEdited !== undefined
+                    ? updatedComment.isEdited
+                    : true,
+                editedAt: updatedComment.editedAt || new Date().toISOString(),
+                replies: comment.replies || [],
+              };
+            }
+            // check nested replies
+            if (comment.replies?.length > 0) {
+              return {
+                ...comment,
+                replies: updateInComments(comment.replies),
+              };
+            }
+            return comment;
+          });
+        };
+
+        state.comments = updateInComments(state.comments);
+        console.log("   Comment updated, replies preserved");
       })
       .addCase(updateComment.rejected, (state, action) => {
         const commentId = action.meta.arg.commentId;

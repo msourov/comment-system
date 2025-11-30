@@ -19,7 +19,6 @@ const CommentItem = ({ comment, depth = 0 }) => {
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  // Fix: Use consistent field names - check what your backend actually returns
   const likeCount = comment.likes || comment.likeCount || 0;
   const dislikeCount = comment.dislikes || comment.dislikeCount || 0;
   const replyCount = comment.replies?.length || comment.replyCount || 0;

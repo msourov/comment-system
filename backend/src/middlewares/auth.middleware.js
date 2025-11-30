@@ -19,17 +19,6 @@ export const authenticate = asyncHandler(async (req, res, next) => {
   }
 
   try {
-    console.log("🔐 Auth Middleware Debug:");
-    console.log(
-      "  - Authorization header:",
-      req.headers.authorization ? "Present" : "Missing"
-    );
-    console.log("  - Token extracted:", token ? "Yes" : "No");
-    console.log(
-      "  - Token preview:",
-      token ? token.slice(0, 30) + "..." : "None"
-    );
-
     if (!token) {
       throw new ApiError(401, "Authentication required. Please login.");
     }
